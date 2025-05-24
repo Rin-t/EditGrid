@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Observation
+import UniformTypeIdentifiers
 
 struct Product: Identifiable {
     let id = UUID().uuidString
@@ -24,11 +25,23 @@ struct ContentView: View {
             } else {
                 ScrollView {
                     LazyVGrid(
-                        columns: [GridItem(.flexible()),
-                                  GridItem(.flexible())]
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ]
                     ) {
                         ForEach(viewModel.products) { product in
                             productCard(product: product)
+                                .draggable(product.id) {
+                                    EmptyView()
+                                }
+                                .dropDestination(for: String.self) { droppedProduct, _ in
+                                    viewModel.exchangeProducts(sourceId: droppedProduct.first ?? "", targetId: product.id)
+                                    return true
+                                } isTargeted: { isTargeted in
+                                    viewModel.updateTargetState(productId: product.id, isTargeted: isTargeted)
+                                }
                         }
                     }
                 }
@@ -43,7 +56,8 @@ struct ContentView: View {
     @ViewBuilder
     private func productCard(product: Product) -> some View {
         ZStack {
-            product.color
+            Rectangle()
+                .fill(product.color.gradient)
             Text(product.color.description)
         }
         .cornerRadius(10)
@@ -64,11 +78,33 @@ final class ViewModel {
     let usecase = UseCase()
     
     var products: [Product] = []
+    var targetedProductIds: Set<String> = []
     
     func onAppear() {
         Task {
             products = await usecase.fetch()
-            print("完了")
+        }
+    }
+    
+    func exchangeProducts(sourceId: String, targetId: String) {
+        guard let sourceIndex = products.firstIndex(where: { $0.id == sourceId }),
+              let targetIndex = products.firstIndex(where: { $0.id == targetId }),
+              sourceIndex != targetIndex else {
+            return
+        }
+        
+        let sourceProduct = products[sourceIndex]
+        let targetProduct = products[targetIndex]
+        
+        products[sourceIndex] = targetProduct
+        products[targetIndex] = sourceProduct
+    }
+    
+    func updateTargetState(productId: String, isTargeted: Bool) {
+        if isTargeted {
+            targetedProductIds.insert(productId)
+        } else {
+            targetedProductIds.remove(productId)
         }
     }
 }
