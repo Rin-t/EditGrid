@@ -9,17 +9,48 @@ import SwiftUI
 import Observation
 import UniformTypeIdentifiers
 
+extension View {
+    @ViewBuilder
+    func modifiers<Content: View>(@ViewBuilder content: @escaping (Self) -> Content) -> some View{
+        content(self)
+    }
+}
+
 struct Product: Identifiable {
     let id = UUID().uuidString
     let color: Color
+}
+
+enum ExchangeType: CaseIterable {
+    case pokepoke
+    case iosApp
+    
+    var name: String {
+        switch self {
+        case .pokepoke:
+            return "ぽけぽけ"
+        case .iosApp:
+            return "あぷり"
+        }
+    }
 }
 
 struct ContentView: View {
     
     @State var viewModel = ViewModel()
     
+    @State var exchangeType: ExchangeType = .pokepoke
+    
     var body: some View {
         VStack {
+            Picker("", selection: $exchangeType) {
+                ForEach(ExchangeType.allCases, id: \.self) {
+                    Text($0.name)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding()
+            
             if viewModel.products.isEmpty {
                 ProgressView()
             } else {
@@ -33,16 +64,24 @@ struct ContentView: View {
                     ) {
                         ForEach(viewModel.products) { product in
                             productCard(product: product)
-                                .draggable(product.id) {
-                                    productCard(product: product)
-                                        .frame(width: 100, height: 100)
-                                        .opacity(0.5)
-                                }
-                                .dropDestination(for: String.self) { droppedProduct, _ in
-                                    viewModel.exchangeProducts(sourceId: droppedProduct.first ?? "", targetId: product.id)
-                                    return true
-                                } isTargeted: { isTargeted in
-                                    viewModel.updateTargetState(productId: product.id, isTargeted: isTargeted)
+                                .modifiers { card in
+                                    switch exchangeType {
+                                    case .pokepoke:
+                                        card
+                                            .draggable(product.id) {
+                                                productCard(product: product)
+                                                    .frame(width: 100, height: 100)
+                                                    .opacity(0.5)
+                                            }
+                                            .dropDestination(for: String.self) { droppedProduct, _ in
+                                                viewModel.exchangeProducts(sourceId: droppedProduct.first ?? "", targetId: product.id)
+                                                return true
+                                            } isTargeted: { isTargeted in
+                                                viewModel.updateTargetState(productId: product.id, isTargeted: isTargeted)
+                                            }
+                                    case .iosApp:
+                                        card
+                                    }
                                 }
                         }
                     }
