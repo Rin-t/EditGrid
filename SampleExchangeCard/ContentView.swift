@@ -16,9 +16,13 @@ extension View {
     }
 }
 
-struct Product: Identifiable {
+struct Product: Identifiable, Equatable {
     let id = UUID().uuidString
     let color: Color
+    
+    static func == (lhs: Product, rhs: Product) -> Bool {
+         return lhs.id == rhs.id
+     }
 }
 
 enum ExchangeType: CaseIterable {
@@ -28,9 +32,9 @@ enum ExchangeType: CaseIterable {
     var name: String {
         switch self {
         case .pokepoke:
-            return "ぽけぽけ"
+            return "いれかえ"
         case .iosApp:
-            return "あぷり"
+            return "あぷりぽいの"
         }
     }
 }
@@ -40,6 +44,8 @@ struct ContentView: View {
     @State var viewModel = ViewModel()
     
     @State var exchangeType: ExchangeType = .pokepoke
+    @State private var draggingItem: Product?
+
     
     var body: some View {
         VStack {
@@ -81,6 +87,28 @@ struct ContentView: View {
                                             }
                                     case .iosApp:
                                         card
+                                            .draggable(product.id) {
+                                                productCard(product: product)
+                                                    .frame(width: 100, height: 100)
+                                                    .opacity(0.5)
+                                                    .onAppear {
+                                                        draggingItem = product
+                                                    }
+                                            }
+                                            .dropDestination(for: String.self) { items, location in
+                                                draggingItem = nil
+                                                return false
+                                            } isTargeted: { status in
+                                                if let draggingItem, status, draggingItem.id != product.id {
+                                                    if let sourceIndex = viewModel.products.firstIndex(of: draggingItem),
+                                                       let destinationIndex = viewModel.products.firstIndex(of: product) {
+                                                        withAnimation(.bouncy) {
+                                                            let sourceItem = viewModel.products.remove(at: sourceIndex)
+                                                            viewModel.products.insert(sourceItem, at: destinationIndex)
+                                                        }
+                                                    }
+                                                }
+                                            }
                                     }
                                 }
                         }
