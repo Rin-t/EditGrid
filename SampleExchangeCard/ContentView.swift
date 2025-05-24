@@ -126,7 +126,17 @@ actor UseCase {
             Product(color: .cyan),
             Product(color: .mint),
             Product(color: .indigo),
-            Product(color: .brown)
+            Product(color: .brown),
+            Product(color: .teal),
+            Product(color: .black),
+            Product(color: Color(red: 0.9, green: 0.4, blue: 0.7)), // ピンク系
+            Product(color: Color(red: 0.5, green: 0.3, blue: 0.9)), // パープル系
+            Product(color: Color(red: 0.2, green: 0.6, blue: 0.9)), // ライトブルー
+            Product(color: Color(red: 0.7, green: 0.9, blue: 0.3)), // ライトグリーン
+            Product(color: Color(red: 0.9, green: 0.8, blue: 0.2)), // ゴールド
+            Product(color: Color(red: 0.3, green: 0.3, blue: 0.3)), // ダークグレー
+            Product(color: Color(red: 0.6, green: 0.4, blue: 0.2)), // ブラウン系
+            Product(color: Color(red: 0.9, green: 0.1, blue: 0.1))  // 明るい赤
         ]
     }
 }
