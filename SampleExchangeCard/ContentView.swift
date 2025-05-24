@@ -34,7 +34,9 @@ struct ContentView: View {
                         ForEach(viewModel.products) { product in
                             productCard(product: product)
                                 .draggable(product.id) {
-                                    EmptyView()
+                                    productCard(product: product)
+                                        .frame(width: 100, height: 100)
+                                        .opacity(0.5)
                                 }
                                 .dropDestination(for: String.self) { droppedProduct, _ in
                                     viewModel.exchangeProducts(sourceId: droppedProduct.first ?? "", targetId: product.id)
@@ -55,13 +57,10 @@ struct ContentView: View {
 
     @ViewBuilder
     private func productCard(product: Product) -> some View {
-        ZStack {
-            Rectangle()
-                .fill(product.color.gradient)
-            Text(product.color.description)
-        }
-        .cornerRadius(10)
-        .aspectRatio(1, contentMode: .fit)
+        Rectangle()
+            .fill(product.color.gradient)
+            .cornerRadius(10)
+            .aspectRatio(1, contentMode: .fit)
     }
 }
 
