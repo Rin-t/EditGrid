@@ -82,8 +82,6 @@ struct ContentView: View {
                                             .dropDestination(for: String.self) { droppedProduct, _ in
                                                 viewModel.exchangeProducts(sourceId: droppedProduct.first ?? "", targetId: product.id)
                                                 return true
-                                            } isTargeted: { isTargeted in
-                                                viewModel.updateTargetState(productId: product.id, isTargeted: isTargeted)
                                             }
                                     case .iosApp:
                                         card
@@ -97,7 +95,7 @@ struct ContentView: View {
                                             }
                                             .dropDestination(for: String.self) { items, location in
                                                 draggingItem = nil
-                                                return false
+                                                return true
                                             } isTargeted: { status in
                                                 if let draggingItem, status, draggingItem.id != product.id {
                                                     if let sourceIndex = viewModel.products.firstIndex(of: draggingItem),
@@ -178,8 +176,6 @@ final class ViewModel {
 
 actor UseCase {
     func fetch() async -> [Product] {
-        try? await Task.sleep(nanoseconds: 2000000000)
-        
         return [
             Product(color: .red),
             Product(color: .blue),
